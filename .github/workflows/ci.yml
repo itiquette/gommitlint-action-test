@@ -1,0 +1,352 @@
+name: CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      action_version:
+        description: 'gommitlint-action version to test (use main for unreleased)'
+        required: false
+        default: 'v0.8.2'
+        type: string
+
+permissions:
+  contents: read
+
+# NOTE: GIT_DEFAULT_HASH is not set to sha256 because:
+# - The repository uses SHA-1 (the default Git object format)
+# - SHA-256 object format requires the repository to be initialized with
+#   `git init --object-format=sha256`, which this repository was not
+# - Setting GIT_DEFAULT_HASH only affects new repository initialization,
+#   not existing repositories, so it had no effect here anyway
+
+jobs:
+  # Test different commit scenarios
+  test-scenarios:
+    name: Test ${{ matrix.branch }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - branch: test-valid-conventional
+            should_pass: true
+          - branch: test-bad-conventional
+            should_pass: false
+          - branch: test-long-subject
+            should_pass: false
+          - branch: test-with-config
+            should_pass: true
+          - branch: test-fixup-commit
+            should_pass: false
+          - branch: test-scope
+            should_pass: true
+          - branch: test-base-branch
+            should_pass: true
+            use_base_branch: true
+    steps:
+      - name: Checkout ${{ matrix.branch }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.branch }}
+          fetch-depth: 0
+
+      - name: Fetch main branch
+        if: matrix.use_base_branch
+        run: git fetch origin main:main
+
+      - name: Checkout gommitlint-action
+        uses: actions/checkout@v4
+        with:
+          repository: itiquette/gommitlint-action
+          ref: ${{ github.event.inputs.action_version }}
+          path: .github/actions/gommitlint-action
+
+      - name: Validate commits
+        id: validate
+        uses: ./.github/actions/gommitlint-action
+        with:
+          count: ${{ matrix.use_base_branch && '' || '2' }}
+          base-branch: ${{ matrix.use_base_branch && 'main' || '' }}
+        continue-on-error: true
+
+      - name: Check result
+        run: |
+          if [[ "${{ matrix.should_pass }}" == "true" && "${{ steps.validate.outcome }}" == "failure" ]]; then
+            echo "❌ UNEXPECTED: ${{ matrix.branch }} should pass but failed"
+            exit 1
+          elif [[ "${{ matrix.should_pass }}" == "false" && "${{ steps.validate.outcome }}" == "success" ]]; then
+            echo "❌ UNEXPECTED: ${{ matrix.branch }} should fail but passed"
+            exit 1
+          else
+            echo "✅ ${{ matrix.branch }}: outcome as expected"
+          fi
+
+  # Test 'range' parameter
+  test-range-param:
+    name: Test range parameter
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: test-valid-conventional
+          fetch-depth: 0
+
+      - name: Checkout gommitlint-action
+        uses: actions/checkout@v4
+        with:
+          repository: itiquette/gommitlint-action
+          ref: ${{ github.event.inputs.action_version }}
+          path: .github/actions/gommitlint-action
+
+      - name: Validate with range
+        uses: ./.github/actions/gommitlint-action
+        with:
+          range: HEAD~2..HEAD
+
+  # Test 'config' parameter
+  test-config-param:
+    name: Test config parameter
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: test-with-config
+          fetch-depth: 0
+
+      - name: Checkout gommitlint-action
+        uses: actions/checkout@v4
+        with:
+          repository: itiquette/gommitlint-action
+          ref: ${{ github.event.inputs.action_version }}
+          path: .github/actions/gommitlint-action
+
+      - name: Validate with config
+        uses: ./.github/actions/gommitlint-action
+        with:
+          config: .gommitlint.yaml
+          count: 2
+
+  # Test 'skip-verification' parameter
+  test-skip-verification-param:
+    name: Test skip-verification parameter
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: test-valid-conventional
+          fetch-depth: 0
+
+      - name: Checkout gommitlint-action
+        uses: actions/checkout@v4
+        with:
+          repository: itiquette/gommitlint-action
+          ref: ${{ github.event.inputs.action_version }}
+          path: .github/actions/gommitlint-action
+
+      - name: Validate with skip-verification
+        uses: ./.github/actions/gommitlint-action
+        with:
+          range: HEAD~1..HEAD
+          skip-verification: 'true'
+
+  # Test base-branch parameter
+  test-base-branch-param:
+    name: Test base-branch parameter
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: test-base-branch
+          fetch-depth: 0
+
+      - name: Fetch main branch
+        run: git fetch origin main:main
+
+      - name: Checkout gommitlint-action
+        uses: actions/checkout@v4
+        with:
+          repository: itiquette/gommitlint-action
+          ref: ${{ github.event.inputs.action_version }}
+          path: .github/actions/gommitlint-action
+
+      - name: Validate with base-branch
+        uses: ./.github/actions/gommitlint-action
+        with:
+          base-branch: main
+
+  # Test rules parameter (only run specific rules)
+  test-rules-param:
+    name: Test rules parameter
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: test-valid-conventional
+          fetch-depth: 0
+
+      - name: Checkout gommitlint-action
+        uses: actions/checkout@v4
+        with:
+          repository: itiquette/gommitlint-action
+          ref: ${{ github.event.inputs.action_version }}
+          path: .github/actions/gommitlint-action
+
+      - name: Validate with specific rules only
+        uses: ./.github/actions/gommitlint-action
+        with:
+          range: HEAD~1..HEAD
+          rules: conventional,subject
+
+  # Test exclude-rules parameter
+  test-exclude-rules-param:
+    name: Test exclude-rules parameter
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: test-valid-conventional
+          fetch-depth: 0
+
+      - name: Checkout gommitlint-action
+        uses: actions/checkout@v4
+        with:
+          repository: itiquette/gommitlint-action
+          ref: ${{ github.event.inputs.action_version }}
+          path: .github/actions/gommitlint-action
+
+      - name: Validate excluding some rules
+        uses: ./.github/actions/gommitlint-action
+        with:
+          range: HEAD~1..HEAD
+          exclude-rules: cryptosignature,signoff
+
+  # Test format parameter
+  test-format-param:
+    name: Test format parameter
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: test-valid-conventional
+          fetch-depth: 0
+
+      - name: Checkout gommitlint-action
+        uses: actions/checkout@v4
+        with:
+          repository: itiquette/gommitlint-action
+          ref: ${{ github.event.inputs.action_version }}
+          path: .github/actions/gommitlint-action
+
+      - name: Validate with JSON format
+        uses: ./.github/actions/gommitlint-action
+        with:
+          range: HEAD~1..HEAD
+          format: json
+
+  # Test count parameter
+  test-count-param:
+    name: Test count parameter
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: test-valid-conventional
+          fetch-depth: 0
+
+      - name: Checkout gommitlint-action
+        uses: actions/checkout@v4
+        with:
+          repository: itiquette/gommitlint-action
+          ref: ${{ github.event.inputs.action_version }}
+          path: .github/actions/gommitlint-action
+
+      - name: Validate last 2 commits
+        uses: ./.github/actions/gommitlint-action
+        with:
+          count: 2
+
+  # Test verbose parameter
+  test-verbose-param:
+    name: Test verbose parameter
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: test-valid-conventional
+          fetch-depth: 0
+
+      - name: Checkout gommitlint-action
+        uses: actions/checkout@v4
+        with:
+          repository: itiquette/gommitlint-action
+          ref: ${{ github.event.inputs.action_version }}
+          path: .github/actions/gommitlint-action
+
+      - name: Validate with verbose output
+        uses: ./.github/actions/gommitlint-action
+        with:
+          range: HEAD~1..HEAD
+          verbose: 'true'
+
+  # Test log-level parameter
+  test-log-level-param:
+    name: Test log-level parameter
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: test-valid-conventional
+          fetch-depth: 0
+
+      - name: Checkout gommitlint-action
+        uses: actions/checkout@v4
+        with:
+          repository: itiquette/gommitlint-action
+          ref: ${{ github.event.inputs.action_version }}
+          path: .github/actions/gommitlint-action
+
+      - name: Validate with debug logging
+        uses: ./.github/actions/gommitlint-action
+        with:
+          range: HEAD~1..HEAD
+          log-level: debug
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Build
+        run: go build -o hello ./...
+
+      - name: Run
+        run: ./hello
