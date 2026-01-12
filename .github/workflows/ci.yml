@@ -350,3 +350,5 @@ jobs:
 
       - name: Run
         run: ./hello
+
+# test-commit: test-with-config 1
