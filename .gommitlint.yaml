@@ -1,0 +1,26 @@
+gommitlint:
+  # Custom configuration for testing
+  conventional:
+    types:
+      - feat
+      - fix
+      - docs
+      - test
+      - refactor
+      - chore
+    scopes:
+      - api
+      - auth
+      - config
+    require_scope: true
+
+  message:
+    subject:
+      max_length: 72
+      case: lower
+
+  rules:
+    disabled:
+      - cryptosignature
+      - signoff
+      - spell
