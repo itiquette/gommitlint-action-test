@@ -22,7 +22,7 @@ permissions:
 jobs:
   # Test different commit scenarios
   test-scenarios:
-    name: Test ${{ matrix.branch }}
+    name: Scenario - ${{ matrix.branch }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     strategy:
@@ -62,7 +62,7 @@ jobs:
           ref: ${{ github.event.inputs.action_version || 'main' }}
           path: .github/actions/gommitlint-action
 
-      - name: Validate commits
+      - name: Validate commits (${{ matrix.branch }})
         id: validate
         uses: ./.github/actions/gommitlint-action
         with:
@@ -70,7 +70,7 @@ jobs:
           base-branch: ${{ matrix.use_base_branch && 'main' || '' }}
         continue-on-error: true
 
-      - name: Check result
+      - name: Check result (${{ matrix.branch }})
         run: |
           if [[ "${{ matrix.should_pass }}" == "true" && "${{ steps.validate.outcome }}" == "failure" ]]; then
             echo "❌ UNEXPECTED: ${{ matrix.branch }} should pass but failed"
@@ -84,7 +84,7 @@ jobs:
 
   # Test 'range' parameter
   test-range-param:
-    name: Test range parameter
+    name: Param - range
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -101,14 +101,14 @@ jobs:
           ref: ${{ github.event.inputs.action_version || 'main' }}
           path: .github/actions/gommitlint-action
 
-      - name: Validate with range
+      - name: Validate with range (HEAD~2..HEAD)
         uses: ./.github/actions/gommitlint-action
         with:
           range: HEAD~2..HEAD
 
   # Test 'config' parameter
   test-config-param:
-    name: Test config parameter
+    name: Param - config
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -125,7 +125,7 @@ jobs:
           ref: ${{ github.event.inputs.action_version || 'main' }}
           path: .github/actions/gommitlint-action
 
-      - name: Validate with config
+      - name: Validate with config (.gommitlint.yaml)
         uses: ./.github/actions/gommitlint-action
         with:
           config: .gommitlint.yaml
@@ -133,7 +133,7 @@ jobs:
 
   # Test 'skip-verification' parameter
   test-skip-verification-param:
-    name: Test skip-verification parameter
+    name: Param - skip-verification
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -150,7 +150,7 @@ jobs:
           ref: ${{ github.event.inputs.action_version || 'main' }}
           path: .github/actions/gommitlint-action
 
-      - name: Validate with skip-verification
+      - name: Validate with skip-verification (true)
         uses: ./.github/actions/gommitlint-action
         with:
           range: HEAD~1..HEAD
@@ -158,7 +158,7 @@ jobs:
 
   # Test base-branch parameter
   test-base-branch-param:
-    name: Test base-branch parameter
+    name: Param - base-branch
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -178,14 +178,14 @@ jobs:
           ref: ${{ github.event.inputs.action_version || 'main' }}
           path: .github/actions/gommitlint-action
 
-      - name: Validate with base-branch
+      - name: Validate with base-branch (main)
         uses: ./.github/actions/gommitlint-action
         with:
           base-branch: main
 
   # Test rules parameter (only run specific rules)
   test-rules-param:
-    name: Test rules parameter
+    name: Param - rules
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -202,7 +202,7 @@ jobs:
           ref: ${{ github.event.inputs.action_version || 'main' }}
           path: .github/actions/gommitlint-action
 
-      - name: Validate with specific rules only
+      - name: Validate with rules (conventional,subject)
         uses: ./.github/actions/gommitlint-action
         with:
           range: HEAD~1..HEAD
@@ -210,7 +210,7 @@ jobs:
 
   # Test exclude-rules parameter
   test-exclude-rules-param:
-    name: Test exclude-rules parameter
+    name: Param - exclude-rules
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -227,7 +227,7 @@ jobs:
           ref: ${{ github.event.inputs.action_version || 'main' }}
           path: .github/actions/gommitlint-action
 
-      - name: Validate excluding some rules
+      - name: Validate with exclude-rules (cryptosignature,signoff)
         uses: ./.github/actions/gommitlint-action
         with:
           range: HEAD~1..HEAD
@@ -235,7 +235,7 @@ jobs:
 
   # Test format parameter
   test-format-param:
-    name: Test format parameter
+    name: Param - format
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -252,7 +252,7 @@ jobs:
           ref: ${{ github.event.inputs.action_version || 'main' }}
           path: .github/actions/gommitlint-action
 
-      - name: Validate with JSON format
+      - name: Validate with format (json)
         uses: ./.github/actions/gommitlint-action
         with:
           range: HEAD~1..HEAD
@@ -260,7 +260,7 @@ jobs:
 
   # Test count parameter
   test-count-param:
-    name: Test count parameter
+    name: Param - count
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -277,14 +277,14 @@ jobs:
           ref: ${{ github.event.inputs.action_version || 'main' }}
           path: .github/actions/gommitlint-action
 
-      - name: Validate last 2 commits
+      - name: Validate with count (2)
         uses: ./.github/actions/gommitlint-action
         with:
           count: 2
 
   # Test verbose parameter
   test-verbose-param:
-    name: Test verbose parameter
+    name: Param - verbose
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -301,7 +301,7 @@ jobs:
           ref: ${{ github.event.inputs.action_version || 'main' }}
           path: .github/actions/gommitlint-action
 
-      - name: Validate with verbose output
+      - name: Validate with verbose (true)
         uses: ./.github/actions/gommitlint-action
         with:
           range: HEAD~1..HEAD
@@ -309,7 +309,7 @@ jobs:
 
   # Test log-level parameter
   test-log-level-param:
-    name: Test log-level parameter
+    name: Param - log-level
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -326,7 +326,7 @@ jobs:
           ref: ${{ github.event.inputs.action_version || 'main' }}
           path: .github/actions/gommitlint-action
 
-      - name: Validate with debug logging
+      - name: Validate with log-level (debug)
         uses: ./.github/actions/gommitlint-action
         with:
           range: HEAD~1..HEAD
