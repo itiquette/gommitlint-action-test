@@ -342,7 +342,7 @@ jobs:
           log-level: debug
           exclude-rules: branchahead
 
-  # Test branchahead rule (expects failure - branch is >5 commits ahead)
+  # Test branchahead rule (expects failure with max_commits_ahead: 2)
   test-branchahead-rule:
     name: Rule - branchahead (expect fail)
     runs-on: ubuntu-latest
@@ -364,11 +364,20 @@ jobs:
           ref: ${{ github.event.inputs.action_version || 'main' }}
           path: .github/actions/gommitlint-action
 
+      - name: Write branchahead test config
+        run: |
+          cat > .gommitlint-branchahead.yaml <<'EOF'
+          gommitlint:
+            repo:
+              max_commits_ahead: 2
+          EOF
+
       - name: Validate with branchahead rule (should fail)
         id: validate
         uses: ./.github/actions/gommitlint-action
         with:
           base-branch: main
+          config: .gommitlint-branchahead.yaml
           rules: branchahead
         continue-on-error: true
 
@@ -378,7 +387,7 @@ jobs:
             echo "❌ UNEXPECTED: branchahead should fail but passed"
             exit 1
           else
-            echo "✅ branchahead: failed as expected (branch >5 commits ahead)"
+            echo "✅ branchahead: failed as expected (branch >2 commits ahead)"
           fi
 
   build:
