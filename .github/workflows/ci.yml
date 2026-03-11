@@ -46,7 +46,7 @@ jobs:
             use_base_branch: true
     steps:
       - name: Checkout ${{ matrix.branch }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ matrix.branch }}
           fetch-depth: 0
@@ -56,7 +56,7 @@ jobs:
         run: git fetch origin main:main
 
       - name: Checkout gommitlint-action
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: itiquette/gommitlint-action
           ref: ${{ github.event.inputs.action_version || 'main' }}
@@ -68,6 +68,7 @@ jobs:
         with:
           count: ${{ matrix.use_base_branch && '' || '2' }}
           base-branch: ${{ matrix.use_base_branch && 'main' || '' }}
+          exclude-rules: branchahead
         continue-on-error: true
 
       - name: Check result (${{ matrix.branch }})
@@ -89,13 +90,13 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: test-valid-conventional
           fetch-depth: 0
 
       - name: Checkout gommitlint-action
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: itiquette/gommitlint-action
           ref: ${{ github.event.inputs.action_version || 'main' }}
@@ -105,6 +106,7 @@ jobs:
         uses: ./.github/actions/gommitlint-action
         with:
           range: HEAD~2..HEAD
+          exclude-rules: branchahead
 
   # Test 'config' parameter
   test-config-param:
@@ -113,13 +115,13 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: test-with-config
           fetch-depth: 0
 
       - name: Checkout gommitlint-action
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: itiquette/gommitlint-action
           ref: ${{ github.event.inputs.action_version || 'main' }}
@@ -130,6 +132,7 @@ jobs:
         with:
           config: .gommitlint.yaml
           count: 2
+          exclude-rules: branchahead
 
   # Test 'skip-verification' parameter
   test-skip-verification-param:
@@ -138,13 +141,13 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: test-valid-conventional
           fetch-depth: 0
 
       - name: Checkout gommitlint-action
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: itiquette/gommitlint-action
           ref: ${{ github.event.inputs.action_version || 'main' }}
@@ -155,6 +158,7 @@ jobs:
         with:
           range: HEAD~1..HEAD
           skip-verification: 'true'
+          exclude-rules: branchahead
 
   # Test base-branch parameter
   test-base-branch-param:
@@ -163,7 +167,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: test-base-branch
           fetch-depth: 0
@@ -172,7 +176,7 @@ jobs:
         run: git fetch origin main:main
 
       - name: Checkout gommitlint-action
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: itiquette/gommitlint-action
           ref: ${{ github.event.inputs.action_version || 'main' }}
@@ -182,6 +186,7 @@ jobs:
         uses: ./.github/actions/gommitlint-action
         with:
           base-branch: main
+          exclude-rules: branchahead
 
   # Test rules parameter (only run specific rules)
   test-rules-param:
@@ -190,13 +195,13 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: test-valid-conventional
           fetch-depth: 0
 
       - name: Checkout gommitlint-action
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: itiquette/gommitlint-action
           ref: ${{ github.event.inputs.action_version || 'main' }}
@@ -207,6 +212,7 @@ jobs:
         with:
           range: HEAD~1..HEAD
           rules: conventional,subject
+          exclude-rules: branchahead
 
   # Test exclude-rules parameter
   test-exclude-rules-param:
@@ -215,23 +221,23 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: test-valid-conventional
           fetch-depth: 0
 
       - name: Checkout gommitlint-action
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: itiquette/gommitlint-action
           ref: ${{ github.event.inputs.action_version || 'main' }}
           path: .github/actions/gommitlint-action
 
-      - name: Validate with exclude-rules (cryptosignature,signoff)
+      - name: Validate with exclude-rules (cryptosignature,signoff,branchahead)
         uses: ./.github/actions/gommitlint-action
         with:
           range: HEAD~1..HEAD
-          exclude-rules: cryptosignature,signoff
+          exclude-rules: cryptosignature,signoff,branchahead
 
   # Test format parameter
   test-format-param:
@@ -240,13 +246,13 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: test-valid-conventional
           fetch-depth: 0
 
       - name: Checkout gommitlint-action
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: itiquette/gommitlint-action
           ref: ${{ github.event.inputs.action_version || 'main' }}
@@ -257,6 +263,7 @@ jobs:
         with:
           range: HEAD~1..HEAD
           format: json
+          exclude-rules: branchahead
 
   # Test count parameter
   test-count-param:
@@ -265,13 +272,13 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: test-valid-conventional
           fetch-depth: 0
 
       - name: Checkout gommitlint-action
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: itiquette/gommitlint-action
           ref: ${{ github.event.inputs.action_version || 'main' }}
@@ -281,6 +288,7 @@ jobs:
         uses: ./.github/actions/gommitlint-action
         with:
           count: 2
+          exclude-rules: branchahead
 
   # Test verbose parameter
   test-verbose-param:
@@ -289,13 +297,13 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: test-valid-conventional
           fetch-depth: 0
 
       - name: Checkout gommitlint-action
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: itiquette/gommitlint-action
           ref: ${{ github.event.inputs.action_version || 'main' }}
@@ -306,6 +314,7 @@ jobs:
         with:
           range: HEAD~1..HEAD
           verbose: 'true'
+          exclude-rules: branchahead
 
   # Test log-level parameter
   test-log-level-param:
@@ -314,13 +323,13 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: test-valid-conventional
           fetch-depth: 0
 
       - name: Checkout gommitlint-action
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: itiquette/gommitlint-action
           ref: ${{ github.event.inputs.action_version || 'main' }}
@@ -331,6 +340,46 @@ jobs:
         with:
           range: HEAD~1..HEAD
           log-level: debug
+          exclude-rules: branchahead
+
+  # Test branchahead rule (expects failure - branch is >5 commits ahead)
+  test-branchahead-rule:
+    name: Rule - branchahead (expect fail)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: test-valid-conventional
+          fetch-depth: 0
+
+      - name: Fetch main branch
+        run: git fetch origin main:main
+
+      - name: Checkout gommitlint-action
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: itiquette/gommitlint-action
+          ref: ${{ github.event.inputs.action_version || 'main' }}
+          path: .github/actions/gommitlint-action
+
+      - name: Validate with branchahead rule (should fail)
+        id: validate
+        uses: ./.github/actions/gommitlint-action
+        with:
+          base-branch: main
+          rules: branchahead
+        continue-on-error: true
+
+      - name: Check branchahead failed as expected
+        run: |
+          if [[ "${{ steps.validate.outcome }}" == "success" ]]; then
+            echo "❌ UNEXPECTED: branchahead should fail but passed"
+            exit 1
+          else
+            echo "✅ branchahead: failed as expected (branch >5 commits ahead)"
+          fi
 
   build:
     name: Build
@@ -338,10 +387,10 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version-file: go.mod
 
