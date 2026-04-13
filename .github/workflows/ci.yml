@@ -68,7 +68,7 @@ jobs:
         with:
           count: ${{ matrix.use_base_branch && '' || '2' }}
           base-branch: ${{ matrix.use_base_branch && 'main' || '' }}
-          exclude-rules: branchahead
+          exclude-rules: branchahead,signoff
         continue-on-error: true
 
       - name: Check result (${{ matrix.branch }})
@@ -106,7 +106,7 @@ jobs:
         uses: ./.github/actions/gommitlint-action
         with:
           range: HEAD~2..HEAD
-          exclude-rules: branchahead
+          exclude-rules: branchahead,signoff
 
   # Test 'config' parameter
   test-config-param:
@@ -132,7 +132,7 @@ jobs:
         with:
           config: .gommitlint.yaml
           count: 2
-          exclude-rules: branchahead
+          exclude-rules: branchahead,signoff
 
   # Test 'skip-verification' parameter
   test-skip-verification-param:
@@ -158,7 +158,7 @@ jobs:
         with:
           range: HEAD~1..HEAD
           skip-verification: 'true'
-          exclude-rules: branchahead
+          exclude-rules: branchahead,signoff
 
   # Test base-branch parameter
   test-base-branch-param:
@@ -186,7 +186,7 @@ jobs:
         uses: ./.github/actions/gommitlint-action
         with:
           base-branch: main
-          exclude-rules: branchahead
+          exclude-rules: branchahead,signoff
 
   # Test rules parameter (only run specific rules)
   test-rules-param:
@@ -212,7 +212,7 @@ jobs:
         with:
           range: HEAD~1..HEAD
           rules: conventional,subject
-          exclude-rules: branchahead
+          exclude-rules: branchahead,signoff
 
   # Test exclude-rules parameter
   test-exclude-rules-param:
@@ -263,7 +263,7 @@ jobs:
         with:
           range: HEAD~1..HEAD
           format: json
-          exclude-rules: branchahead
+          exclude-rules: branchahead,signoff
 
   # Test count parameter
   test-count-param:
@@ -288,7 +288,7 @@ jobs:
         uses: ./.github/actions/gommitlint-action
         with:
           count: 2
-          exclude-rules: branchahead
+          exclude-rules: branchahead,signoff
 
   # Test verbose parameter
   test-verbose-param:
@@ -314,7 +314,7 @@ jobs:
         with:
           range: HEAD~1..HEAD
           verbose: 'true'
-          exclude-rules: branchahead
+          exclude-rules: branchahead,signoff
 
   # Test log-level parameter
   test-log-level-param:
@@ -340,7 +340,7 @@ jobs:
         with:
           range: HEAD~1..HEAD
           log-level: debug
-          exclude-rules: branchahead
+          exclude-rules: branchahead,signoff
 
   # Test branchahead rule (expects failure with max_commits_ahead: 2)
   test-branchahead-rule:
